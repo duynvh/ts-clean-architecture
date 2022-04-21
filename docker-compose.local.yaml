@@ -1,0 +1,49 @@
+version: '3.2'
+
+services:
+
+  postgresql_local:
+    build: docker/postgres/.
+    env_file:
+      - env/local.pg.env
+    ports:
+      - '5454:5432'
+    networks:
+      - iposter_network_local
+    volumes:
+      - pg_data_local:/var/lib/postgresql/data
+
+  # minio_local:
+  #   image: minio/minio
+  #   entrypoint: sh
+  #   command: -c 'mkdir -p /export/images && /usr/bin/minio server /export'
+  #   env_file:
+  #     - env/local.minio.env
+  #   ports:
+  #     - '9000:9000'
+  #   networks:
+  #     - iposter_network_local
+  #   volumes:
+  #     - minio_data_local:/var/lib/minio/data
+
+  minio_local:
+    image: "minio/minio"
+    restart: always
+    networks:
+      - iposter_network_local
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data_local:/data
+    command: "server --console-address :9001 /data"
+    env_file:
+      - env/local.minio.env
+
+volumes:
+  pg_data_local:
+  minio_data_local:
+
+networks:
+  iposter_network_local:
+    driver: bridge
